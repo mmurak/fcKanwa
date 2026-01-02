@@ -1,0 +1,93 @@
+<h3>明治書院 新釈漢和 新修版（1975）</h3>
+<table border="0">
+	<tr>
+		<td>四角号碼：</td>
+		<td><input type="textfield" id="FCentry" placeholder="半角数字を入力"/></td>
+		<td>（安藤次郎 上野裕人 共編 「吉田賢抗編 新釈漢和（新修版）四角号碼索引」より）</td>
+	</tr>
+	<tr>
+		<td>ページ：</td>
+		<td><input type="textfield" id="PageEntry" placeholder="半角数字を入力"/></td>
+		<td>（明治書院「新釈漢和 新修版」本文ページを入力）</td>
+	</tr>
+</table>
+
+<script src="./meijishoinShinshakuKanwaInfo.js"></script>
+
+<script>
+class GlobalManager {
+	constructor() {
+		this.fcEntry = document.getElementById("FCentry");
+		this.pageEntry = document.getElementById("PageEntry");
+	}
+}
+const G = new GlobalManager();
+
+G.fcEntry.addEventListener("keydown", (evt) => {
+	if (evt.key === "Enter" && !evt.isComposing) {
+		evt.preventDefault();
+		fcSearch();
+		G.fcEntry.focus();
+	} else if (evt.key == "Escape") {
+		G.fcEntry.value = "";
+	}
+});
+G.fcEntry.addEventListener("focus", (evt) => {
+	G.fcEntry.select();
+});
+
+G.pageEntry.addEventListener("keydown", (evt) => {
+	if (evt.key === "Enter" && !evt.isComposing) {
+		evt.preventDefault();
+		directOpen();
+		G.pageEntry.focus();
+	} else if (evt.key == "Escape") {
+		G.pageEntry.value = "";
+	}
+});
+G.pageEntry.addEventListener("focus", (evt) => {
+	G.pageEntry.select();
+});
+
+function zenToHan(entry) {
+	return entry.replace(/[０-９]/g, (ch) => {
+		const diff = ch.codePointAt(0) - '０'.codePointAt(0);
+		return String.fromCodePoint('0'.codePointAt(0) + diff);
+	});
+}
+
+function fcSearch() {
+	let entry = G.fcEntry.value;
+	if (entry.match(/[^0-9０-９]/)) {
+		alert("Enter numerical value.");
+		return;
+	}
+	entry = zenToHan(entry);
+	G.fcEntry.value = entry;
+
+	let idx = FourCornerData.length - 1;
+	while (FourCornerData[idx] > entry) {
+		idx--;
+	}
+	openWindow(FCurl + (idx + FourCornerData[0]), "FCresult");
+}
+
+function directOpen() {
+	let entry = G.pageEntry.value;
+	if (entry.match(/[^0-9０-９]/)) {
+		alert("Enter numerical value.");
+		return;
+	}
+	entry = zenToHan(entry);
+	G.pageEntry.value = entry;
+	openWindow(ShinJigenURL + (Math.floor(entry/2) + PageOffset), "新字源")
+}
+
+function openWindow(url, title) {
+	window.open(url, title);
+}
+
+G.fcEntry.focus();
+
+
+</script>
