@@ -1,16 +1,40 @@
+<html>
+	<head>
+		<title>角川新字源 66版（1974.1）</title>
+		<link rel="shortcut icon" href="kiwi-bird.png">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<style>
+body {
+	font-size: 14px;
+}
+
+@media screen and (max-width: 768px) {
+body {
+	font-size: 24px;
+}
+input[type="textfield"] {
+	font-size: 24px;
+}
+button{
+	font-size: 24px;
+}
+		</style>
+	</head>
+	<body>
 <h3>角川新字源 66版（1974.1）</h3>
-<table border="0">
-	<tr>
-		<td>四角号碼：</td>
-		<td><input type="textfield" id="FCentry" placeholder="半角数字を入力"/></td>
-		<td>（安藤次郎 上野裕人 共編 『角川書店刊 新字源 四角号碼索引」より）</td>
-	</tr>
-	<tr>
-		<td>ページ：</td>
-		<td><input type="textfield" id="PageEntry" placeholder="半角数字を入力"/></td>
-		<td>（『角川新字源』 66版本文ページを入力）</td>
-	</tr>
-</table>
+		<table border="0">
+			<tr>
+				<td><input type="textfield" id="FCentry" placeholder="四角号碼を半角数字で入力" autocomplete="off"/></td>
+				<td><button onclick="fcSearch()">四角号碼検索</button></td>
+			</tr>
+			<tr>
+				<td><input type="textfield" id="PageEntry" placeholder="本文ページ番号を半角数字を入力" autocomplete="off"/></td>
+				<td><button onclick="directOpen()">本文ページを開く</button></td>
+			</tr>
+		</table>
+
+<p><span style="font-size: 75%">※ 使用するには、国会図書館デジタルコレクションの「個人向けデジタル化資料送信サービス」にログインしておく必要があります。</span></p>
 
 <script src="./shinJigenInfo.js"></script>
 
@@ -91,3 +115,6 @@ G.fcEntry.focus();
 
 
 </script>
+
+	</body>
+</html>
