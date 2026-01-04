@@ -25,27 +25,42 @@ button{
 <h3>講談社 大字典 7訂新装版（1963）</h3>
 		<table border="0">
 			<tr>
-				<td><input type="textfield" id="FCentry" placeholder="四角号碼を半角数字で入力" autocomplete="off"/></td>
-				<td><button onclick="fcSearch()">四角号碼検索</button></td>
+				<td><input type="textfield" id="FCentry" placeholder="四角号碼入力" autocomplete="off"/></td>
+				<td><button onclick="fcSearch()">四角検索</button></td>
 			</tr>
 			<tr>
-				<td><input type="textfield" id="PageEntry" placeholder="本文ページ番号を半角数字を入力" autocomplete="off"/></td>
-				<td><button onclick="directOpen()">本文ページを開く</button></td>
+				<td><input type="textfield" id="OnkunEntry" placeholder="音訓入力" autocomplete="off"/></td>
+				<td><button onclick="onkunSearch()">音訓索引</button></td>
+			</tr>
+			<tr>
+				<td><input type="textfield" id="PageEntry" placeholder="頁または文字番号" autocomplete="off"/></td>
+				<td><button onclick="directOpen()">本文表示</button></td>
 			</tr>
 		</table>
 
-<p><span style="font-size: 75%">※ 使用するには、国会図書館デジタルコレクションの「個人向けデジタル化資料送信サービス」にログインしておく必要があります。</span></p>
+<p>
+<ul style="font-size: 75%">
+<li>使用するには、国会図書館デジタルコレクションの「個人向けデジタル化資料送信サービス」にログインしておく必要があります。</li>
+<li>いずれかの入力欄に入力後、右隣のボタンを押してください。</li>
+<li>［四角号碼］入力欄は半角数字で入力してください。</li>
+<li>［音訓表示］欄は全角ひらがなで入力してください。</li>
+<li>［本文表示］欄に数字を入力すると本文の該当ページが表示されます。また、数値の前に「.」を付加すると、該当文字番号のページが表示されます。</li>
+</ul>
+</p>
 
+<script src="./regulatorNeo.js"></script>
 <script src="./koudanshaDaijitenInfo.js"></script>
 
 <script>
 class GlobalManager {
 	constructor() {
 		this.fcEntry = document.getElementById("FCentry");
+		this.onkunEntry = document.getElementById("OnkunEntry");
 		this.pageEntry = document.getElementById("PageEntry");
 	}
 }
 const G = new GlobalManager();
+const R = new RegulatorNeo();
 
 G.fcEntry.addEventListener("keydown", (evt) => {
 	if (evt.key === "Enter" && !evt.isComposing) {
@@ -58,6 +73,19 @@ G.fcEntry.addEventListener("keydown", (evt) => {
 });
 G.fcEntry.addEventListener("focus", (evt) => {
 	G.fcEntry.select();
+});
+
+G.onkunEntry.addEventListener("keydown", (evt) => {
+	if (evt.key === "Enter" && !evt.isComposing) {
+		evt.preventDefault();
+		onkunSearch();
+		G.onkunEntry.focus();
+	} else if (evt.key == "Escape") {
+		G.onkunEntry.value = "";
+	}
+});
+G.onkunEntry.addEventListener("focus", (evt) => {
+	G.onkunEntry.select();
 });
 
 G.pageEntry.addEventListener("keydown", (evt) => {
@@ -98,13 +126,34 @@ function fcSearch() {
 
 function directOpen() {
 	let entry = G.pageEntry.value;
-	if (entry.match(/[^0-9０-９]/)) {
+	if (!entry.match(/^[\.。]?[\0-9０-９]+$/)) {
 		alert("Enter numerical value.");
 		return;
 	}
-	entry = zenToHan(entry);
+	entry = zenToHan(entry).replace(/。/, ".");
 	G.pageEntry.value = entry;
-	openWindow(DaijitenURL + (Math.floor(entry/2) + PageOffset), "大字典")
+	if (entry.indexOf(".") == -1) {
+		openWindow(DaijitenURL + (Math.floor(entry/2) + PageOffset), "大字典")
+	} else {
+		let i = mbIDX.length - 1;
+		const targetMb = Number(entry.replace(/\./, ""));
+		while ((i >= 0) && (mbIDX[i][0] > targetMb)) {
+			i--;
+		}
+		openWindow(DaijitenURL + mbIDX[i][1], "大字典")
+	}
+}
+
+function onkunSearch() {
+	let target = G.onkunEntry.value;
+	target = target.replace(/[ァ-ン]/g, (s) => {
+		return String.fromCharCode(s.charCodeAt(0) - 0x60);
+	});
+	let idx = onkunIDX.length - 1;
+	while (R.compare(target, onkunIDX[idx]) < 0) {
+		idx--;
+	}
+	openWindow(DaijitenURL + (onkunStart-idx), "大字典");
 }
 
 function openWindow(url, title) {
