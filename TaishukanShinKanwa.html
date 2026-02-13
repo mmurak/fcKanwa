@@ -1,0 +1,158 @@
+<html>
+	<head>
+		<title>大修館 新漢和辞典 改訂版（1982.4）検索</title>
+		<link rel="shortcut icon" href="kiwi-bird.png">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<style>
+body {
+	font-size: 14px;
+}
+
+@media screen and (max-width: 768px) {
+body {
+	font-size: 24px;
+}
+input[type="textfield"] {
+	font-size: 24px;
+}
+button{
+	font-size: 24px;
+}
+		</style>
+	</head>
+	<body>
+<h3>大修館 新漢和辞典 改訂版（1982.4）</h3>
+		<table border="0">
+			<tr>
+				<td><input type="textfield" id="FCentry" placeholder="四角号碼入力" autocomplete="off"/></td>
+				<td><button onclick="fcSearch()">四角号碼</button></td>
+			</tr>
+			<tr>
+				<td><input type="textfield" id="OnkunEntry" placeholder="音訓入力" autocomplete="off"/></td>
+				<td><button onclick="onkunSearch()">音訓索引</button></td>
+			</tr>
+			<tr>
+				<td><input type="textfield" id="PageEntry" placeholder="頁または文字番号" autocomplete="off"/></td>
+				<td><button onclick="directOpen()">本文表示</button></td>
+			</tr>
+		</table>
+
+<p>
+<ul style="font-size: 75%">
+<li>使用するには、国会図書館デジタルコレクションの「個人向けデジタル化資料送信サービス」にログインしておく必要があります。</li>
+<li>いずれかの入力欄に入力後、右隣のボタンを押してください。</li>
+<li>［四角号碼］入力欄は半角数字で入力してください（四角号碼の<a href="https://dl.ndl.go.jp/pid/12446422/1/652" target="_blank">解説</a>、および<a href="https://dl.ndl.go.jp/pid/12446422/1/655" target="_blank">新方式との対応表</a>）。</li>
+<li>［音訓表示］欄は全角ひらがなで入力してください。</li>
+<li>［本文表示］欄に数字を入力すると本文の該当ページが表示されます。</li>
+</ul>
+</p>
+
+<script src="./regulatorNeo.js"></script>
+<script src="./TaishukanShinKanwa.js"></script>
+
+<script>
+class GlobalManager {
+	constructor() {
+		this.fcEntry = document.getElementById("FCentry");
+		this.onkunEntry = document.getElementById("OnkunEntry");
+		this.pageEntry = document.getElementById("PageEntry");
+	}
+}
+const G = new GlobalManager();
+const R = new RegulatorNeo();
+
+G.fcEntry.addEventListener("keydown", (evt) => {
+	if (evt.key === "Enter" && !evt.isComposing) {
+		evt.preventDefault();
+		fcSearch();
+		G.fcEntry.focus();
+	} else if (evt.key == "Escape") {
+		G.fcEntry.value = "";
+	}
+});
+G.fcEntry.addEventListener("focus", (evt) => {
+	G.fcEntry.select();
+});
+
+G.onkunEntry.addEventListener("keydown", (evt) => {
+	if (evt.key === "Enter" && !evt.isComposing) {
+		evt.preventDefault();
+		onkunSearch();
+		G.onkunEntry.focus();
+	} else if (evt.key == "Escape") {
+		G.onkunEntry.value = "";
+	}
+});
+G.onkunEntry.addEventListener("focus", (evt) => {
+	G.onkunEntry.select();
+});
+
+G.pageEntry.addEventListener("keydown", (evt) => {
+	if (evt.key === "Enter" && !evt.isComposing) {
+		evt.preventDefault();
+		directOpen();
+		G.pageEntry.focus();
+	} else if (evt.key == "Escape") {
+		G.pageEntry.value = "";
+	}
+});
+G.pageEntry.addEventListener("focus", (evt) => {
+	G.pageEntry.select();
+});
+
+function zenToHan(entry) {
+	return entry.replace(/[０-９]/g, (ch) => {
+		const diff = ch.codePointAt(0) - '０'.codePointAt(0);
+		return String.fromCodePoint('0'.codePointAt(0) + diff);
+	});
+}
+
+function fcSearch() {
+	let entry = G.fcEntry.value;
+	if (entry.match(/[^0-9０-９]/)) {
+		alert("Enter numerical value.");
+		return;
+	}
+	entry = zenToHan(entry);
+	G.fcEntry.value = entry;
+
+	let idx = FourCornerData.length - 1;
+	while (FourCornerData[idx] > entry) {
+		idx--;
+	}
+	openWindow(FCurl + (idx + FourCornerData[0]), "FCresult");
+}
+
+function directOpen() {
+	let entry = G.pageEntry.value;
+	if (!entry.match(/^[\0-9０-９]+$/)) {
+		alert("Enter numerical value.");
+		return;
+	}
+	entry = zenToHan(entry);
+	G.pageEntry.value = entry;
+	openWindow(DaijitenURL + (Math.floor(entry/2) + PageOffset), "大修館新漢和辞典")
+}
+
+function onkunSearch() {
+	let target = G.onkunEntry.value;
+	target = target.replace(/[ァ-ン]/g, (s) => {
+		return String.fromCharCode(s.charCodeAt(0) - 0x60);
+	});
+	let idx = onkunIDX.length - 1;
+	while (R.compare(target, onkunIDX[idx]) < 0) {
+		idx--;
+	}
+	openWindow(DaijitenURL + (onkunStart+idx), "音訓索引");
+}
+
+function openWindow(url, title) {
+	window.open(url, title);
+}
+
+G.fcEntry.focus();
+</script>
+
+	</body>
+</html>
